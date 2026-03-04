@@ -1,19 +1,38 @@
 import os
+import streamlit as st
 from dotenv import load_dotenv
 import google.generativeai as genai
-from prompts import build_research_prompt, build_gap_analysis_prompt
+
 from prompts import (
     build_research_prompt,
     build_gap_analysis_prompt,
     build_abstract_refinement_prompt,
     build_methodology_expansion_prompt,
-    build_title_optimization_prompt
+    build_title_optimization_prompt,
+    build_conference_recommendation_prompt
 )
+
+from conference_data import conferences
+
+# --------------------------------------------------
+# LOAD API KEY (works for both local and Streamlit Cloud)
+# --------------------------------------------------
 
 load_dotenv()
 
 api_key = os.getenv("GEMINI_API_KEY")
-genai.configure(api_key=api_key)
+
+# If running on Streamlit Cloud, use secrets
+if not api_key:
+    try:
+        api_key = st.secrets["GEMINI_API_KEY"]
+    except Exception:
+        api_key = None
+
+if not api_key:
+    st.error("⚠️ Gemini API key not found. Please configure it in Streamlit Secrets.")
+else:
+    genai.configure(api_key=api_key)
 
 def generate_research_structure(topic, domain, keywords, complexity):
 
